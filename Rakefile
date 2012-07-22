@@ -17,8 +17,8 @@ Jeweler::Tasks.new do |gem|
   gem.name = "tracker-reports"
   gem.homepage = "http://github.com/dougalcorn/tracker-reports"
   gem.license = "MIT"
-  gem.summary = %Q{TODO: one-line summary of your gem}
-  gem.description = %Q{TODO: longer description of your gem}
+  gem.summary = %Q{Reporting against Pivotal Tracker projects}
+  gem.description = %Q{Primarily used to generate project summaries to include on invoices across a date range}
   gem.email = "dougalcorn@gmail.com"
   gem.authors = ["Doug Alcorn"]
   # dependencies defined in Gemfile
@@ -32,14 +32,6 @@ Rake::TestTask.new(:test) do |test|
   test.verbose = true
 end
 
-require 'rcov/rcovtask'
-Rcov::RcovTask.new do |test|
-  test.libs << 'test'
-  test.pattern = 'test/**/test_*.rb'
-  test.verbose = true
-  test.rcov_opts << '--exclude "gems/*"'
-end
-
 task :default => :test
 
 require 'rdoc/task'
@@ -50,4 +42,18 @@ Rake::RDocTask.new do |rdoc|
   rdoc.title = "tracker-reports #{version}"
   rdoc.rdoc_files.include('README*')
   rdoc.rdoc_files.include('lib/**/*.rb')
+end
+
+$LOAD_PATH.unshift(File.dirname(__FILE__))
+require 'lib/tracker-reports'
+
+desc "Accepted story summary for PROJECT_ID between START_DATE and END_DATE"
+task :accepted_stories do
+  options = {
+    :project_id => ENV['PROJECT_ID'],
+    :start_date => Date.parse(ENV['START_DATE']),
+    :end_date => Date.parse(ENV['END_DATE'])
+  }
+  t = TrackerReports.new(options)
+  puts t.story_summary
 end
