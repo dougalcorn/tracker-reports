@@ -31,14 +31,41 @@ class TrackerReports
     end.sort_by(&:accepted_at)
   end
 
+  def accepted_summary
+    accepted_stories.collect { |s| story_to_s(s) }.join("\n")
+  end
+
+  def finished_summary
+    finished_stories.collect { |s| story_to_s(s) }.join("\n")
+  end
+
+  def finished_stories
+    @finished_stories ||= project.stories.all.select do |s|
+      s.current_state == "finished" && s.current_state = "delivered"
+    end
+  end
+
   def accepted_points
     accepted_stories.inject(0) { |sum, story| sum + story.estimate.to_i }
   end
 
+  def finished_points
+    finished_stories.inject(0) { |sum, story| sum + story.estimate.to_i }
+  end
+
+
   def story_summary
-    "# Accepted stories between #{options[:start_date]} and #{options[:end_date]}\n" +
-      accepted_stories.collect { |s| story_to_s(s) }.join("\n") + 
-      "\n\nTotal stories: #{accepted_stories.size}, Total points: #{accepted_points}"
+    <<-EOR
+# Accepted stories between #{options[:start_date]} and #{options[:end_date]}
+#{accepted_summary}
+
+Total stories: #{accepted_stories.size}, Total points: #{accepted_points}
+
+# Finished and Delivered stories
+#{finished_summary}
+Total stories: #{finished_stories.size}, Total points: #{finished_points}
+
+EOR
   end
 
   def story_to_s(s)
@@ -46,7 +73,10 @@ class TrackerReports
     if s.story_type == "feature"
       string += "/#{s.estimate}"
     end
-    string += "): #{s.name} #{s.accepted_at.strftime('%F')}"
+    string += "): #{s.name} "
+    if s.accepted_at
+      string += "#{s.accepted_at.strftime('%F')}"
+    end
     string
   end
 end
