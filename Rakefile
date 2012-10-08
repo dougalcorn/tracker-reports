@@ -57,3 +57,18 @@ task :accepted_stories do
   t = TrackerReports.new(options)
   puts t.story_summary
 end
+
+task :project_stories do
+  options = {
+    project_id: ENV['PROJECT_ID'],
+    start_date: (Date.today - 14).to_s,
+    end_date: Date.today.to_s,
+  }
+  projects = Psych.load(File.open(ENV['PROJECTS']))
+  projects.each do |name, project_id|
+    puts "#{name}: #{project_id}"
+    t = TrackerReports.new(options.merge(project_id: project_id.to_s))
+    File.open("#{name}-#{Date.today.strftime('%Y-%m-%d')}.mkd", "w") { |f| f.puts t.story_summary }
+  end
+end
+  
