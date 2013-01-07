@@ -34,7 +34,7 @@ class TrackerReports
 
   def finished_stories
     @finished_stories ||= project.stories.all.select do |s|
-      s.current_state == "finished" && s.current_state = "delivered"
+      s.current_state == "finished" || (s.current_state == "delivered" && s.accepted_at.nil?)
     end
   end
 
